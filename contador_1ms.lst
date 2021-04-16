@@ -1,0 +1,124 @@
+---------------------------------------------
+PIC ASSEMBLER LISTING
+Line    Address Opcode  Instruction
+---------------------------------------------
+0001    0000            ;   HGEF DCBA
+0002    0000            ;0  0011 1111 0x3F
+0003    0000            ;1  0000 0110 0x06
+0004    0000            ;2  0101 1011 0x5B
+0005    0000            ;3  0100 1111 0x4F
+0006    0000            ;4  0101 0110 0x56
+0007    0000            ;5  0101 1101 0x5D
+0008    0000            ;6  0111 1101 0x7D
+0009    0000            ;7  0000 0111 0x07
+0010    0000            ;8  0111 1111 0x7F
+0011    0000            ;9  0101 0111 0x57
+0012    0000            	ORG 0X00
+0013    0000    28D0    	GOTO INICIO
+0014    0001            
+0015    0001            ;rotina interrupt
+0016    0001            	ORG 0X04
+0017    0004            
+0018    0004    00B6    	MOVWF 0X36 ; salvando registrador p/ evitar overflow
+0019    0005            
+0020    0005    110B    	BcF 0x0B,2 ;VOLTAR A TER INTERRUPT
+0021    0006            
+0022    0006    30F8    	MOVLW 248 ;P/ CONTAR 1ms
+0023    0007    0081    	MOVWF 0X01
+0024    0008            
+0025    0008    01B4    	CLRF 0x34
+0026    0009    0AB0    	INCF 0x30, F
+0027    000A    300A    	MOVLW 0x0A
+0028    000B    0230    	SUBWF 0x30,W
+0029    000C    1D03    	BTFSS STATUS,Z
+0030    000D    2821    	GOTO FF
+0031    000E    01B0    	CLRF 0x30
+0032    000F    0AB1    	INCF 0X31, F
+0033    0010    300A    	MOVLW 0x0A
+0034    0011    0231    	SUBWF 0x31,W
+0035    0012    1D03    	BTFSS STATUS,Z
+0036    0013    2821    	GOTO FF
+0037    0014    01B1    	CLRF 0x31
+0038    0015    0AB2    	INCF 0X32, F
+0039    0016    300A    	MOVLW 0x0A
+0040    0017    0232    	SUBWF 0x32,W
+0041    0018    1D03    	BTFSS STATUS,Z
+0042    0019    2821    	GOTO FF
+0043    001A    01B2    	CLRF 0x32
+0044    001B    0AB3    	INCF 0X33, F
+0045    001C    300A    	MOVLW 0x0A
+0046    001D    0233    	SUBWF 0x33,W
+0047    001E    1D03    	BTFSS STATUS,Z
+0048    001F    2821    	GOTO FF
+0049    0020    01B3    	CLRF 0x33
+0050    0021            
+0051    0021            FF:
+0052    0021    0836    	MOVF 0X36,W ;voltando valor original de w
+0053    0022            
+0054    0022    0009    	RETFIE
+0055    0023            
+0056    0023            
+0057    0023            	ORG 0XD0
+0058    00D0            INICIO:
+0059    00D0    3086    	MOVLW TRISB ;PORTB OUT, move endereço de trisb pra W
+0060    00D1    0084    	MOVWF FSR ;joga no endereço indireto
+0061    00D2    0180    	CLRF 0X00 ; limpa portB
+0062    00D3    3088    	MOVLW TRISD ;PORTD OUT
+0063    00D4    0084    	MOVWF FSR
+0064    00D5    0180    	CLRF 0X00
+0065    00D6    3081    	MOVLW OPTION_REG ;OPTION REG
+0066    00D7    0084    	MOVWF FSR
+0067    00D8    1400    	BSF 0x00,0 ; habilitar o prescale x256
+0068    00D9    1480    	BSF 0x00,1
+0069    00DA    1500    	BSF 0x00,2
+0070    00DB    1180    	BCF 0x00,3
+0071    00DC    1280    	BCF 0x00,5
+0072    00DD            
+0073    00DD    30F8    	MOVLW 248 ;P/ CONTAR 1ms
+0074    00DE    0081    	MOVWF 0X01
+0075    00DF            
+0076    00DF    178B    	BSF 0x0B,7 ;HABILITA INTERRUPÇÕES
+0077    00E0    168B    	BSF 0x0B,5
+0078    00E1            
+0079    00E1            LOOP:
+0080    00E1    0830    	MOVF 0x30,W ; move o valor do reg 0x30 para w
+0081    00E2    20F6    	CALL DIG
+0082    00E3    0086    	MOVWF PORTB ;liga os leds correspondentes ao numero
+0083    00E4    1408    	BSF PORTD, 0
+0084    00E5    1008    	BcF PORTD, 0
+0085    00E6            
+0086    00E6    0831    	MOVF 0x31, W
+0087    00E7    20F6    	CALL DIG
+0088    00E8    0086    	MOVWF PORTB
+0089    00E9    1488    	BSF PORTD, 1
+0090    00EA    1088    	BcF PORTD, 1
+0091    00EB            
+0092    00EB    0832    	MOVF 0x32, W
+0093    00EC    20F6    	CALL DIG
+0094    00ED    0086    	MOVWF PORTB
+0095    00EE    1508    	BSF PORTD, 2
+0096    00EF    1108    	BcF PORTD, 2
+0097    00F0            
+0098    00F0    0833    	MOVF 0x33, W
+0099    00F1    20F6    	CALL DIG
+0100    00F2    0086    	MOVWF PORTB
+0101    00F3    1588    	BSF PORTD, 3
+0102    00F4    1188    	BcF PORTD, 3
+0103    00F5            
+0104    00F5    28E1    	GOTO LOOP
+0105    00F6            
+0106    00F6            
+0107    00F6            DIG:
+0108    00F6    0782    	ADDWF PCL,1 ; %endereço que se localizam as instruções
+0109    00F7    343F    	RETLW 0x3F ;0
+0110    00F8    3406    	RETLW 0x06 ;1
+0111    00F9    345B    	RETLW 0x5B ;2
+0112    00FA    344F    	RETLW 0x4F ;3
+0113    00FB    3456    	RETLW 0x56 ;4'
+0114    00FC    345D    	RETLW 0x5D ;5'
+0115    00FD    347D    	RETLW 0x7D ;6'
+0116    00FE    3407    	RETLW 0x07 ;7'
+0117    00FF    347F    	RETLW 0x7F ;8'
+0118    0100    3457    	RETLW 0x57 ;9'
+---------------------------------------------
+Number of errors = 0
